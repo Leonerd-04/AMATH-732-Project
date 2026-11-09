@@ -172,6 +172,7 @@ sim.run()
 ```
 
 See main for yet another example.
+
 ---
 
 ## Dependencies
