@@ -3,9 +3,10 @@ import numpy as np
 
 class Individual:
     # Initializes an individual with its position
-    def __init__(self, x:float, y:float):
+    def __init__(self, x:float, y:float, infected: bool):
         self.x = x
         self.y = y
+        self.infected = infected
 
     # Calculate one step of brownian motion.
     # v is the volatility and represents how far the individuals move in a given timestep
@@ -42,3 +43,15 @@ class Individual:
             self.x += ux * dt
             self.y += uy * dt
         pass
+
+    # If is infected, randomly disinfects.
+    def tick_infection(self, prob_disinfection: float):
+        if not self.infected:
+            return
+        if np.random.uniform(0, 1) < prob_disinfection:
+            self.infected = False
+
+    # Notifies an individual they've been infected
+    def infect(self):
+        self.infected = True
+        # Todo: Change masking parameters here
