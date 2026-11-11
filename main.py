@@ -132,6 +132,9 @@ def main():
             # Check whether to become infected
             # An individual becomes infected when they are within the infection distance of another
             for j in range(numparts):
+                if i == j:
+                    continue
+
                 if individuals[j].infected and dist[i, j] < infection_distance:
                     p_infection = infection_probability
 
