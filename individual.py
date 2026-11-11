@@ -7,6 +7,9 @@ class Individual:
         self.x = x
         self.y = y
         self.infected = infected
+        self.masked = False
+        self.masked_x = None
+        self.masked_y = None
 
     # Calculate one step of brownian motion.
     # v is the volatility and represents how far the individuals move in a given timestep
@@ -51,7 +54,28 @@ class Individual:
         if np.random.uniform(0, 1) < prob_disinfection:
             self.infected = False
 
+
+    # Check whether to put on/take off a mask
+    def mask_check(self, masking_probability: float, mask_multiplier: float):
+        if self.masked_x is None:
+            return
+
+        dist_sick_sq = (self.x - self.masked_x) ** 2 + (self.y - self.masked_y) ** 2
+        is_in_sick_range = dist_sick_sq < 0.1
+
+        current_masking_probability = masking_probability
+
+        if is_in_sick_range:
+            current_masking_probability = masking_probability * mask_multiplier
+
+        if np.random.uniform(0, 1) < current_masking_probability:
+            self.masked = True
+        else:
+            self.masked = False
+
+
     # Notifies an individual they've been infected
     def infect(self):
         self.infected = True
-        # Todo: Change masking parameters here
+        self.masked_x = self.x
+        self.masked_y = self.y

@@ -13,8 +13,14 @@ dt = 0.01
 v = 0.005               # Volatility
 
 prop_initial_infection = 0.05   # The proportion of individuals that are infected at t = 0
-infection_distance = 0.005      # How close to be to trigger infection
-infection_halflife = 0.05
+infection_distance = 0.01       # How close to be to trigger infection
+infection_probability = 0.1     # Probability of being infected given that an individual is within infection distance
+mask_reduction = 0.6            # How much a mask reduces probability of infection
+
+masking_probability = 0.01
+mask_multiplier = 10
+
+infection_halflife = 0.01
 
 # The probability of being cured at any given time step
 # With it being modeled as an exponential distribution
@@ -57,6 +63,10 @@ def display(fig, ax, t:float):
         p.infected for p in individuals
     ])
 
+    masked = np.array([
+        p.masked for p in individuals
+    ])
+
     # Plot as a scatter plot
     ax.plot(x, y, 'k.', markersize=3)
 
@@ -67,6 +77,15 @@ def display(fig, ax, t:float):
         'ro',
         markersize=5
     )
+
+    # Masked individuals
+    ax.plot(
+        x[masked],
+        y[masked],
+        'g*',
+        markersize=6
+    )
+
 
     ax.grid(True)
 
@@ -100,17 +119,27 @@ def main():
             # Movement
             indiv.move(dt, v, u_annulus, is_polar=True)
 
+            # Check for infection
             indiv.tick_infection(prob_disinfection)
+
+            # Check whether to wear a mask
+            indiv.mask_check(masking_probability, mask_multiplier)
 
             # Skips checking for infection if the given individual is infected already
             if indiv.infected:
                 continue
 
-            # Calculate whether to become infected
+            # Check whether to become infected
             # An individual becomes infected when they are within the infection distance of another
             for j in range(numparts):
                 if individuals[j].infected and dist[i, j] < infection_distance:
-                    indiv.infect()
+                    p_infection = infection_probability
+
+                    if indiv.masked:
+                        p_infection *= mask_reduction
+
+                    if np.random.uniform(0, 1) < p_infection:
+                        indiv.infect()
 
 
 
