@@ -24,7 +24,7 @@ infection_halflife = 0.01
 
 # The probability of being cured at any given time step
 # With it being modeled as an exponential distribution
-prob_disinfection = 1 - np.exp2(dt/infection_halflife)
+prob_disinfection = 1 - np.exp2(-dt/infection_halflife)
 
 
 # Function for keeping individuals in annulus
