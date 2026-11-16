@@ -3,10 +3,10 @@ import numpy as np
 
 class Individual:
     # Initializes an individual with its position
-    def __init__(self, x:float, y:float, infected: bool):
+    def __init__(self, x:float, y:float, infected:float):
         self.x = x
         self.y = y
-        self.infected = infected
+        self.infected = float(infected)
         self.masked = False
         self.masked_x = None
         self.masked_y = None
@@ -49,10 +49,10 @@ class Individual:
 
     # If is infected, randomly disinfects.
     def tick_infection(self, prob_disinfection: float):
-        if not self.infected:
+        if self.infected <= 0:
             return
         if np.random.uniform(0, 1) < prob_disinfection:
-            self.infected = False
+            self.infected = 0.0
 
 
     # Check whether to put on/take off a mask
@@ -75,7 +75,7 @@ class Individual:
 
 
     # Notifies an individual they've been infected
-    def infect(self):
-        self.infected = True
+    def infect(self, infection_level: float = 1.0):
+        self.infected = infection_level
         self.masked_x = self.x
         self.masked_y = self.y

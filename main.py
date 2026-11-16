@@ -12,15 +12,15 @@ Rdispersion = 0.1       # How far apart the individuals start from each other
 dt = 0.01
 v = 0.005               # Volatility
 
-prop_initial_infection = 0.05   # The proportion of individuals that are infected at t = 0
+prop_initial_infection = 0.2   # The proportion of individuals that are infected at t = 0
 infection_distance = 0.01       # How close to be to trigger infection
-infection_probability = 0.1     # Probability of being infected given that an individual is within infection distance
+infection_probability = 0.3     # Probability of being infected given that an individual is within infection distance
 mask_reduction = 0.6            # How much a mask reduces probability of infection
 
 masking_probability = 0.01
 mask_multiplier = 10
 
-infection_halflife = 0.01
+infection_halflife = 0.25
 
 # The probability of being cured at any given time step
 # With it being modeled as an exponential distribution
@@ -48,34 +48,38 @@ def init_individuals():
         y = r * np.sin(theta)
 
         # First 5% of individuals will be infected
-        infected = i/numparts < 0.05
+        infected = 1.0 if i/numparts < prop_initial_infection else 0.0
+
 
         individuals.append(Individual(x, y, infected))
 
 def display(fig, ax, t:float):
     ax.clear()
 
-    # Grab the x and y coordinates for the individuals
+    # Grab the x and y coordinates
     x = np.array([p.x for p in individuals])
     y = np.array([p.y for p in individuals])
 
-    infected = np.array([
-        p.infected for p in individuals
-    ])
+    infected = np.array([p.infected for p in individuals])
+    masked = np.array([p.masked for p in individuals])
 
-    masked = np.array([
-        p.masked for p in individuals
-    ])
-
-    # Plot as a scatter plot
-    ax.plot(x, y, 'k.', markersize=3)
-
-    # Infected individuals
+    # Uninfected individuals in black
     ax.plot(
-        x[infected],
-        y[infected],
-        'ro',
-        markersize=5
+        x[infected == 0],
+        y[infected == 0],
+        'k.',
+        markersize=3
+    )
+
+    # Infected individuals using a colour gradient
+    ax.scatter(
+        x[infected > 0],
+        y[infected > 0],
+        c=infected[infected > 0],
+        cmap='RdYlBu_r',
+        vmin=0,
+        vmax=1,
+        s=25
     )
 
     # Masked individuals
@@ -86,11 +90,8 @@ def display(fig, ax, t:float):
         markersize=6
     )
 
-
     ax.grid(True)
-
     ax.set_title(f"Time = {t:.3f}")
-
     ax.set_xlim(-1.5, 1.5)
     ax.set_ylim(-1.5, 1.5)
     ax.set_aspect('equal')
@@ -104,6 +105,14 @@ def display(fig, ax, t:float):
 def main():
     init_individuals()
     fig, ax = plt.subplots(figsize=(7, 7))
+    sm = plt.cm.ScalarMappable(
+    cmap='RdYlBu_r',
+    norm=plt.Normalize(vmin=0, vmax=1)
+)
+
+    sm.set_array([])
+
+    fig.colorbar(sm, ax=ax, label="Infection strength")
     t = 0
     # This loop handles all of the simulation stepping.
     for i in range(numsteps):
@@ -135,14 +144,15 @@ def main():
                 if i == j:
                     continue
 
-                if individuals[j].infected and dist[i, j] < infection_distance:
-                    p_infection = infection_probability
+                if individuals[j].infected > 0 and dist[i, j] < infection_distance:
+                    p_infection = infection_probability * individuals[j].infected
 
                     if indiv.masked:
                         p_infection *= mask_reduction
 
                     if np.random.uniform(0, 1) < p_infection:
-                        indiv.infect()
+                        infection_level = np.random.uniform(0, 1)
+                        indiv.infect(infection_level)
 
 
 
