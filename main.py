@@ -106,9 +106,9 @@ def main():
     init_individuals()
     fig, ax = plt.subplots(figsize=(7, 7))
     sm = plt.cm.ScalarMappable(
-    cmap='RdYlBu_r',
-    norm=plt.Normalize(vmin=0, vmax=1)
-)
+        cmap='RdYlBu_r',
+        norm=plt.Normalize(vmin=0, vmax=1)
+    )
 
     sm.set_array([])
 
