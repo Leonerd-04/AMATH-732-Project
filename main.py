@@ -37,6 +37,29 @@ def u_annulus(r:float, theta: float)-> tuple[float, float]:
     uth = rotational_speed      # Here the rotation is just lumped into our velocity field
     return ur, uth
 
+# Function for keeping individulas in two orbiting circles.
+R0 = 0.5
+def u_2_annuli(x:float, y: float)-> tuple[float, float]:
+    r_1 = np.sqrt((x - R0)** 2 + (y) ** 2)
+    theta_1 = np.arctan2(y, x - R0)
+    r_2 = np.sqrt((x + R0)** 2 + (y) ** 2)
+    theta_2 = np.arctan2(y, x + R0)
+
+    ur1 = -strength * (1 + 99 * np.exp(-((theta_1 - np.pi)/0.4) ** 2)) * (r_1 - R0) * np.exp( - r_1 ** 2)
+    uth1 = rotational_speed
+
+    ur2 = -strength * (1 + 99 * np.exp(-((theta_2 - 0)/0.4) ** 2)) * (r_2 - R0) * np.exp( - r_2 ** 2)
+    uth2 = -rotational_speed
+
+    u1 = ur1 * np.cos(theta_1) - uth1 * np.sin(theta_1)
+    v1 = ur1 * np.sin(theta_1) + uth1 * np.cos(theta_1)
+    u2 = ur2 * np.cos(theta_2) - uth2 * np.sin(theta_2)
+    v2 = ur2 * np.sin(theta_2) + uth2 * np.cos(theta_2)
+
+    if x < 0:
+        return u2, v2
+    else:
+        return u1, v1
 individuals = []
 
 def init_individuals():
@@ -46,6 +69,11 @@ def init_individuals():
         r = np.random.uniform(R0 - Rdispersion, R0 + Rdispersion)
         x = r * np.cos(theta)
         y = r * np.sin(theta)
+
+        if np.random.uniform(0, 1) < 0.5:
+            x += R0
+        else:
+            x -= R0
 
         # First 5% of individuals will be infected
         infected = 1.0 if i/numparts < prop_initial_infection else 0.0
@@ -126,7 +154,7 @@ def main():
 
         for i, indiv in enumerate(individuals):
             # Movement
-            indiv.move(dt, v, u_annulus, is_polar=True)
+            indiv.move(dt, v, u_2_annuli, is_polar=False)
 
             # Check for infection
             indiv.tick_infection(prob_disinfection)
