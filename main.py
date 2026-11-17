@@ -101,9 +101,9 @@ def display(fig, ax, t:float):
 
     # Infected individuals using a colour gradient
     ax.scatter(
-        x[infected > 0],
-        y[infected > 0],
-        c=infected[infected > 0],
+        x[infected >= 0],
+        y[infected >= 0],
+        c=infected[infected >= 0],
         cmap='RdYlBu_r',
         vmin=0,
         vmax=1,
@@ -178,8 +178,8 @@ def main():
                     if indiv.masked:
                         p_infection *= mask_reduction
 
-                    if np.random.uniform(0, 1) < p_infection:
-                        infection_level = np.random.uniform(0, 1)
+                    if np.exp(-0.1*(individuals[j].infected - individuals[i].infected)) < infection_probability:
+                        infection_level = (individuals[j].infected - individuals[i].infected) * np.random.uniform(0, 1)
                         indiv.infect(infection_level)
 
 

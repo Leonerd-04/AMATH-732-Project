@@ -75,7 +75,7 @@ class Individual:
 
 
     # Notifies an individual they've been infected
-    def infect(self, infection_level: float = 1.0):
-        self.infected = infection_level
+    def infect(self, delta_inf: float = 1.0):
+        self.infected += delta_inf
         self.masked_x = self.x
         self.masked_y = self.y
