@@ -27,7 +27,7 @@ class Individual:
     # unless u is defined using r and theta, then we have u(r, theta) = ur, utheta
     # is_polar specifies whether we are using x and y or r and theta
     def move(self, dt: float, v: float, u: Callable[[float, float], tuple[float, float]], is_polar: bool = False):
-        self.move_brownian(v)
+        # Advect first, evaluating the field at the pre-kick position.
         if is_polar:
             # Convert to polar
             r = np.sqrt(self.x ** 2 + self.y ** 2)
@@ -45,11 +45,13 @@ class Individual:
             ux, uy = u(self.x, self.y)  # Use the provided field to redirect movement
             self.x += ux * dt
             self.y += uy * dt
-        pass
+
+        # Then apply Brownian kick, scaled by sqrt(dt) for correct diffusion.
+        self.move_brownian(v * np.sqrt(dt))
 
     # If is infected, randomly disinfects.
     def tick_infection(self, prob_disinfection: float):
-        if self.infected <= 0:
+        if self.infected == 0:
             return
         if np.random.uniform(0, 1) < prob_disinfection:
             self.infected = 0.0
