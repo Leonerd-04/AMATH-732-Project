@@ -73,10 +73,6 @@ total_count = pos_count + neg_count
 OUT_DIR = "results/plots"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-print("Data loaded.")
-
-
-
 
 # Spatial snapshots (basically frozen snips of the video)
 
@@ -452,10 +448,6 @@ for it in range(n_t):
 
         interface_count[it] = len(i_arr) - same
 
-
-print("Diagnostics computed.")
-
-
 # PLOT 4: Segregation time series
 
 
@@ -742,8 +734,3 @@ plt.savefig(
 plt.close()
 
 
-# ============================================================
-# FINISHED
-# ============================================================
-
-print(f"\nDone. All 5 plots written to {OUT_DIR}/")
