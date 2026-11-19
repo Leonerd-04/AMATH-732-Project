@@ -228,9 +228,9 @@ def main():
                 # Check whether to wear a mask
                 # indiv.mask_check(masking_probability, mask_multiplier)
 
-                # Skips checking for infection if the given individual is infected already
-                if indiv.infected:
-                    continue
+                # # Skips checking for infection if the given individual is infected already
+                # if indiv.infected:
+                #     continue
 
                 # Check whether to become infected
                 # An individual becomes infected when they are within the infection distance of another
@@ -239,13 +239,13 @@ def main():
                         continue
 
                     if individuals[j].infected != 0 and dist[i, j] < infection_distance:
-                        p_infection = infection_probability * individuals[j].infected
+                        p_infection = np.exp(-1 * (individuals[j].infected - individuals[i].infected))
 
-                        if indiv.masked:
-                            # p_infection *= mask_reduction
-                            pass
+                        # if indiv.masked:
+                        #     # p_infection *= mask_reduction
+                        #     pass
 
-                        if np.exp(-1 * abs(individuals[j].infected - individuals[i].infected)) > np.random.uniform(0, 1):
+                        if p_infection > np.random.uniform(0, 1):
                             infection_level = (individuals[j].infected) * np.random.uniform(0, 1)
                             indiv.infect(infection_level)
 
