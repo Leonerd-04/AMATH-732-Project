@@ -7,7 +7,7 @@ import scipy.spatial as sp
 numparts = 1000
 numsteps = 1000
 mysig = 0.1
-rotational_speed = 1    # How quick the rotation is around the annulus
+rotational_speed = 4    # How quick the rotation is around the annulus
 Rdispersion = 0.1       # How far apart the individuals start from each other
 dt = 0.01
 v = 0.005               # Volatility
@@ -76,8 +76,12 @@ def init_individuals():
             x -= R0
 
         # First 5% of individuals will be infected
-        infected = 1.0 if i/numparts < prop_initial_infection else 0.0
-
+        if np.abs(y/x) < 2 and np.abs(y/x) > 1/2 and x > 0.2 and y > 0:
+            infected = -1
+        elif np.abs(y/x) < 1/6 and x < 0.2:
+            infected = 1
+        else:
+            infected = 0
 
         individuals.append(Individual(x, y, infected))
 
@@ -92,20 +96,20 @@ def display(fig, ax, t:float):
     masked = np.array([p.masked for p in individuals])
 
     # Uninfected individuals in black
-    ax.plot(
-        x[infected == 0],
-        y[infected == 0],
-        'k.',
-        markersize=3
-    )
+    # ax.plot(
+    #   x[infected == 0],
+    #    y[infected == 0],
+    #    'k.',
+    #    markersize=3
+    #)
 
     # Infected individuals using a colour gradient
     ax.scatter(
-        x[infected >= 0],
-        y[infected >= 0],
-        c=infected[infected >= 0],
+        x,
+        y,
+        c=infected,
         cmap='RdYlBu_r',
-        vmin=0,
+        vmin=-1,
         vmax=1,
         s=25
     )
@@ -135,7 +139,7 @@ def main():
     fig, ax = plt.subplots(figsize=(7, 7))
     sm = plt.cm.ScalarMappable(
         cmap='RdYlBu_r',
-        norm=plt.Normalize(vmin=0, vmax=1)
+        norm=plt.Normalize(vmin=-1, vmax=1)
     )
 
     sm.set_array([])
@@ -160,7 +164,7 @@ def main():
             indiv.tick_infection(prob_disinfection)
 
             # Check whether to wear a mask
-            indiv.mask_check(masking_probability, mask_multiplier)
+            # indiv.mask_check(masking_probability, mask_multiplier)
 
             # Skips checking for infection if the given individual is infected already
             if indiv.infected:
@@ -176,10 +180,11 @@ def main():
                     p_infection = infection_probability * individuals[j].infected
 
                     if indiv.masked:
-                        p_infection *= mask_reduction
+                        # p_infection *= mask_reduction
+                        pass
 
-                    if np.exp(-0.1*(individuals[j].infected - individuals[i].infected)) < infection_probability:
-                        infection_level = (individuals[j].infected - individuals[i].infected) * np.random.uniform(0, 1)
+                    if np.exp(-1*(individuals[j].infected - individuals[i].infected)) > np.random.uniform(0, 1):
+                        infection_level = (individuals[j].infected) * np.random.uniform(0, 1)
                         indiv.infect(infection_level)
 
 
