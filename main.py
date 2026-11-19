@@ -1,7 +1,10 @@
+
 from individual import Individual
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.spatial as sp
+import csv
+import os
 
 # Important parameters
 numparts = 1000
@@ -20,7 +23,7 @@ mask_reduction = 0.6            # How much a mask reduces probability of infecti
 masking_probability = 0.01
 mask_multiplier = 10
 
-infection_halflife = 0.25
+infection_halflife = 0.9999
 
 # The probability of being cured at any given time step
 # With it being modeled as an exponential distribution
@@ -60,7 +63,27 @@ def u_2_annuli(x:float, y: float)-> tuple[float, float]:
         return u2, v2
     else:
         return u1, v1
+
+
 individuals = []
+ever_infected = []
+
+
+# Logging
+def log_individuals(t, writer):
+
+    for i, indiv in enumerate(individuals):
+
+        writer.writerow({
+            "time": t,
+            "agent_num": i,
+            "infection": indiv.infected,
+            "masked": indiv.masked,
+            "ever_infected": ever_infected[i],
+            "x": indiv.x,
+            "y": indiv.y
+        })
+
 
 def init_individuals():
     for i in range(numparts):
@@ -84,6 +107,8 @@ def init_individuals():
             infected = 0
 
         individuals.append(Individual(x, y, infected))
+        ever_infected.append(infected != 0)
+
 
 def display(fig, ax, t:float):
     ax.clear()
@@ -146,52 +171,106 @@ def main():
 
     fig.colorbar(sm, ax=ax, label="Infection strength")
     t = 0
-    # This loop handles all of the simulation stepping.
-    for i in range(numsteps):
-        display(fig, ax, t)
-        t += dt
 
-        # Get coordinates in a suitable format, then find the distance matrix
-        # Such that dist[i, j] is the distance between the ith and jth individual
-        x = [[p.x, p.y] for p in individuals]
-        dist = sp.distance.squareform(sp.distance.pdist(x))
+    # Open CSV files for data logging
+    os.makedirs("results", exist_ok=True)
 
-        for i, indiv in enumerate(individuals):
-            # Movement
-            indiv.move(dt, v, u_2_annuli, is_polar=False)
+    with open("results/individual_infections.csv", "w", newline="") as f, \
+         open("results/new_infections.csv", "w", newline="") as nf:
 
-            # Check for infection
-            indiv.tick_infection(prob_disinfection)
+        fieldnames = [
+            "time",
+            "agent_num",
+            "infection",
+            "masked",
+            "ever_infected",
+            "x",
+            "y"
+        ]
 
-            # Check whether to wear a mask
-            # indiv.mask_check(masking_probability, mask_multiplier)
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
 
-            # Skips checking for infection if the given individual is infected already
-            if indiv.infected:
-                continue
+        new_fieldnames = [
+            "time",
+            "agent_num",
+            "infection_strength",
+            "masked",
+            "x",
+            "y"
+        ]
 
-            # Check whether to become infected
-            # An individual becomes infected when they are within the infection distance of another
-            for j in range(numparts):
-                if i == j:
+        new_writer = csv.DictWriter(nf, fieldnames=new_fieldnames)
+        new_writer.writeheader()
+
+        # Log initial agent states
+        log_individuals(t, writer)
+
+        # This loop handles all of the simulation stepping.
+        for i in range(numsteps):
+            display(fig, ax, t)
+            t += dt
+
+            # Get coordinates in a suitable format, then find the distance matrix
+            # Such that dist[i, j] is the distance between the ith and jth individual
+            x = [[p.x, p.y] for p in individuals]
+            dist = sp.distance.squareform(sp.distance.pdist(x))
+
+            new_infection_flags = np.zeros(numparts, dtype=bool)
+
+            for i, indiv in enumerate(individuals):
+                # Movement
+                indiv.move(dt, v, u_2_annuli, is_polar=False)
+
+                # # Check for infection
+                # indiv.tick_infection(prob_disinfection)
+
+                # Check whether to wear a mask
+                # indiv.mask_check(masking_probability, mask_multiplier)
+
+                # Skips checking for infection if the given individual is infected already
+                if indiv.infected:
                     continue
 
-                if individuals[j].infected > 0 and dist[i, j] < infection_distance:
-                    p_infection = infection_probability * individuals[j].infected
+                # Check whether to become infected
+                # An individual becomes infected when they are within the infection distance of another
+                for j in range(numparts):
+                    if i == j:
+                        continue
 
-                    if indiv.masked:
-                        # p_infection *= mask_reduction
-                        pass
+                    if individuals[j].infected != 0 and dist[i, j] < infection_distance:
+                        p_infection = infection_probability * individuals[j].infected
 
-                    if np.exp(-1*(individuals[j].infected - individuals[i].infected)) > np.random.uniform(0, 1):
-                        infection_level = (individuals[j].infected) * np.random.uniform(0, 1)
-                        indiv.infect(infection_level)
+                        if indiv.masked:
+                            # p_infection *= mask_reduction
+                            pass
 
+                        if np.exp(-1 * abs(individuals[j].infected - individuals[i].infected)) > np.random.uniform(0, 1):
+                            infection_level = (individuals[j].infected) * np.random.uniform(0, 1)
+                            indiv.infect(infection_level)
 
+                            if not ever_infected[i]:
+                                ever_infected[i] = True
+                                new_infection_flags[i] = True
 
+                                new_writer.writerow({
+                                    "time": t,
+                                    "agent_num": i,
+                                    "infection_strength": infection_level,
+                                    "masked": indiv.masked,
+                                    "x": indiv.x,
+                                    "y": indiv.y
+                                })
+
+                            break
+
+            # Log all agents after the timestep has completed
+            log_individuals(t, writer)
 
     # Plot non-interactively
     plt.ioff()
     plt.show()
+
+
 if __name__ == "__main__":
     main()
