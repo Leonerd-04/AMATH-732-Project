@@ -46,17 +46,22 @@ The green and red markers indicate the initial and final population states, resp
 with others who share their opinion. The first panel (k-NN segregation) measures the proportion of an individual's eight 
 nearest neighbours who hold the same opinion. Higher values indicate stronger clustering of like-minded individuals, 
 while the dotted lines represent the expected proportions if neighbours were distributed randomly according to the 
-overall opinion balance. The second panel (segregation excess) measures the difference between observed (local) and 
+overall opinion balance. 
+
+The second panel (segregation excess) measures the difference between observed (local) and 
 expected same-opinion neighbour fractions (global). Positive values indicate segregation, while negative values indicate 
-greater interaction with opposing opinions than would be expected randomly. The third panel (normalised opinion interface) 
-measures the proportion of nearby pairs that hold opposing opinions. Higher values indicate more contact between competing opinion groups, 
-whereas lower values suggest greater separation.
+greater interaction with opposing opinions than would be expected randomly. 
+
+The third panel (normalised opinion interface) measures the proportion of nearby pairs that hold opposing opinions. 
+Higher values indicate more contact between competing opinion groups, whereas lower values suggest greater separation.
 
 [V]Angular segregation: This figure examines how positive and negative opinions are distributed around each circle over time. 
 The heatmaps divide each circle into 36 angular segments and show the majority opinion within each segment: 
 red represents a positive majority, blue a negative majority, and grey indicates segments without a clear majority. 
-This reveals how opinions cluster spatially and whether distinct regions of opposing opinions develop. 
+
+This reveals how opinions cluster spatially and whether distinct regions of opposing opinions develop.  
 The accompanying boundary plots count the number of transitions between neighbouring occupied angular segments with opposing majorities. 
+
 A higher number of boundaries indicates more frequent changes between positive- and negative-dominated regions, 
 while a lower number suggests larger, more consolidated regions of similar opinion. 
 Together, these plots show how spatial opinion segregation develops independently within each circle.
