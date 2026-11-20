@@ -2,7 +2,7 @@ This text file describes some of the changes that come with the merge request. T
 
 The updates are as follows:
 
-[a] Checks where self.infected was checked as being less than or equal to zero or now are now just checks for non-zero (since the infection range is [-1,1]). 
+[a] Checks where self.infected was checked as being less than or equal to zero are now just checks for non-zero (since the infection range is [-1,1]). 
 
 Example: in fuction tick_infection. 
 
