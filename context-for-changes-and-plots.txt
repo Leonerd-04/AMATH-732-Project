@@ -65,3 +65,8 @@ The accompanying boundary plots count the number of transitions between neighbou
 A higher number of boundaries indicates more frequent changes between positive- and negative-dominated regions, 
 while a lower number suggests larger, more consolidated regions of similar opinion. 
 Together, these plots show how spatial opinion segregation develops independently within each circle.
+
+Of course, all of this is up to my interpretation. Let me know if you feel otherwise about the plots, or if there are edits you
+think would benefit the presentation quality and final deliverables or even new plots you think might be worth generating.
+
+-Siphelele
