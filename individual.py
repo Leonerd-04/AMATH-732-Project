@@ -49,7 +49,7 @@ class Individual:
 
     # If is infected, randomly disinfects.
     def tick_infection(self, prob_disinfection: float):
-        if self.infected <= 0:
+        if self.infected == 0:
             return
         if np.random.uniform(0, 1) < prob_disinfection:
             self.infected = 0.0
@@ -75,7 +75,7 @@ class Individual:
 
 
     # Notifies an individual they've been infected
-    def infect(self, infection_level: float = 1.0):
-        self.infected = infection_level
+    def infect(self, delta_inf: float = 1.0):
+        self.infected += delta_inf
         self.masked_x = self.x
         self.masked_y = self.y
