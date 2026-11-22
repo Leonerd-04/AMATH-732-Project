@@ -100,15 +100,15 @@ def init_individuals():
             x -= R0
 
         # First 5% of individuals will be infected
-        if np.abs(y/x) < 2 and np.abs(y/x) > 1/2 and x > 0.2 and y > 0:
-            infected = -1
+        if np.abs(y/x) < 1/6 and x > 0.2:
+            opinion = -1
         elif np.abs(y/x) < 1/6 and x < 0.2:
-            infected = 1
+            opinion = 1
         else:
-            infected = 0
+            opinion = 0
 
-        individuals.append(Individual(x, y, infected))
-        ever_infected.append(infected != 0)
+        individuals.append(Individual(x, y, opinion))
+        ever_infected.append(opinion != 0)
 
 # As opposed to plots.py, renders an animation of the individuals as the code is running.
 def display(fig, ax, t:float):

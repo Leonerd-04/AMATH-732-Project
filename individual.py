@@ -20,6 +20,15 @@ class Individual:
         self.x += dx
         self.y += dy
 
+    def move_opinionated(self, sigma: float, vol: float, dt: float):
+        # If close to the center, move to the left or right depending on opinion.
+        # Helps create "echo chamber" effect, you tend to hang with those you associate with.
+        if np.abs(self.x) < sigma * 1:
+            u = vol * np.tanh(self.opinion) * np.exp(-(self.x / sigma) ** 2)
+            self.x += u * dt
+
+
+
     # calculates one movement step
     # v is the volatility and represents how far the individuals move in a given timestep
     # dt is the timestep length
@@ -46,6 +55,7 @@ class Individual:
             self.x += ux * dt
             self.y += uy * dt
         pass
+        self.move_opinionated(0.01, 0.5, dt)
 
     # If is infected, randomly disinfects.
     # Old and from old infection model.
