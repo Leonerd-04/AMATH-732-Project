@@ -15,8 +15,11 @@ Rdispersion = 0.1       # How far apart the individuals start from each other
 dt = 0.01
 v = 0.005               # Volatility, describes the magnitude of the brownian motion
 
-prop_initial_infection = 0.2    # (Deprecated) The proportion of individuals that are infected at t = 0
 interaction_distance = 0.01     # How close to be to trigger an exchange of opinion
+interaction_strength = 0.3      # How strong this opinion change is
+echo_effect = 0.2               # When two people are similar opinion strengths, this term pushes their collective opinions up.
+
+prop_initial_infection = 0.2    # (Deprecated) The proportion of individuals that are infected at t = 0
 infection_probability = 0.3     # (Deprecated) Probability of being infected given that an individual is within infection distance
 mask_reduction = 0.6            # (Deprecated) How much a mask reduces probability of infection
 
@@ -99,11 +102,10 @@ def init_individuals():
         else:
             x -= R0
 
-        # First 5% of individuals will be infected
         if np.abs(y/x) < 1/6 and x > 0.2:
-            opinion = -1
+            opinion = np.random.uniform(-1, 0)
         elif np.abs(y/x) < 1/6 and x < 0.2:
-            opinion = 1
+            opinion = np.random.uniform(0, 1)
         else:
             opinion = 0
 
@@ -240,14 +242,14 @@ def main():
                         continue
 
                     if individuals[j].opinion != 0 and dist[i, j] < interaction_distance:
-                        p_infection = np.exp(-1 * (individuals[j].opinion - individuals[i].opinion))
+                        p_infection = np.exp(-1 * np.abs(individuals[j].opinion - individuals[i].opinion))
 
                         # if indiv.masked:
                         #     # p_infection *= mask_reduction
                         #     pass
 
                         if p_infection > np.random.uniform(0, 1):
-                            infection_level = (individuals[j].opinion) * np.random.uniform(0, 1)
+                            infection_level =  ((1 + echo_effect) * individuals[j].opinion - individuals[i].opinion) * np.random.uniform(0, interaction_strength)
                             indiv.change_opinion(infection_level)
 
                             if not ever_infected[i]:
