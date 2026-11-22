@@ -6,7 +6,7 @@ class Individual:
     def __init__(self, x:float, y:float, infected:float):
         self.x = x
         self.y = y
-        self.infected = float(infected)
+        self.opinion = float(infected)
         self.masked = False
         self.masked_x = None
         self.masked_y = None
@@ -48,14 +48,16 @@ class Individual:
         pass
 
     # If is infected, randomly disinfects.
+    # Old and from old infection model.
     def tick_infection(self, prob_disinfection: float):
-        if self.infected == 0:
+        if self.opinion == 0:
             return
         if np.random.uniform(0, 1) < prob_disinfection:
-            self.infected = 0.0
+            self.opinion = 0.0
 
 
     # Check whether to put on/take off a mask
+    # Old and from old infection model.
     def mask_check(self, masking_probability: float, mask_multiplier: float):
         if self.masked_x is None:
             return
@@ -75,7 +77,7 @@ class Individual:
 
 
     # Notifies an individual they've been infected
-    def infect(self, delta_inf: float = 1.0):
-        self.infected += delta_inf
+    def change_opinion(self, delta_op: float = 1.0):
+        self.opinion += delta_op
         self.masked_x = self.x
         self.masked_y = self.y

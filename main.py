@@ -13,20 +13,21 @@ mysig = 0.1
 rotational_speed = 4    # How quick the rotation is around the annulus
 Rdispersion = 0.1       # How far apart the individuals start from each other
 dt = 0.01
-v = 0.005               # Volatility
+v = 0.005               # Volatility, describes the magnitude of the brownian motion
 
-prop_initial_infection = 0.2   # The proportion of individuals that are infected at t = 0
-infection_distance = 0.01       # How close to be to trigger infection
-infection_probability = 0.3     # Probability of being infected given that an individual is within infection distance
-mask_reduction = 0.6            # How much a mask reduces probability of infection
+prop_initial_infection = 0.2    # (Deprecated) The proportion of individuals that are infected at t = 0
+interaction_distance = 0.01     # How close to be to trigger an exchange of opinion
+infection_probability = 0.3     # (Deprecated) Probability of being infected given that an individual is within infection distance
+mask_reduction = 0.6            # (Deprecated) How much a mask reduces probability of infection
 
-masking_probability = 0.01
-mask_multiplier = 10
+masking_probability = 0.01      # Deprecated
+mask_multiplier = 10            # Deprecated
 
 infection_halflife = 0.9999
 
 # The probability of being cured at any given time step
 # With it being modeled as an exponential distribution
+# Deprecated
 prob_disinfection = 1 - np.exp2(-dt/infection_halflife)
 
 
@@ -77,7 +78,7 @@ def log_individuals(t, writer):
         writer.writerow({
             "time": t,
             "agent_num": i,
-            "infection": indiv.infected,
+            "infection": indiv.opinion,
             "masked": indiv.masked,
             "ever_infected": ever_infected[i],
             "x": indiv.x,
@@ -109,7 +110,7 @@ def init_individuals():
         individuals.append(Individual(x, y, infected))
         ever_infected.append(infected != 0)
 
-
+# As opposed to plots.py, renders an animation of the individuals as the code is running.
 def display(fig, ax, t:float):
     ax.clear()
 
@@ -117,7 +118,7 @@ def display(fig, ax, t:float):
     x = np.array([p.x for p in individuals])
     y = np.array([p.y for p in individuals])
 
-    infected = np.array([p.infected for p in individuals])
+    infected = np.array([p.opinion for p in individuals])
     masked = np.array([p.masked for p in individuals])
 
     # Uninfected individuals in black
@@ -169,7 +170,7 @@ def main():
 
     sm.set_array([])
 
-    fig.colorbar(sm, ax=ax, label="Infection strength")
+    fig.colorbar(sm, ax=ax, label="Polarization Strength")
     t = 0
 
     # Open CSV files for data logging
@@ -238,16 +239,16 @@ def main():
                     if i == j:
                         continue
 
-                    if individuals[j].infected != 0 and dist[i, j] < infection_distance:
-                        p_infection = np.exp(-1 * (individuals[j].infected - individuals[i].infected))
+                    if individuals[j].opinion != 0 and dist[i, j] < interaction_distance:
+                        p_infection = np.exp(-1 * (individuals[j].opinion - individuals[i].opinion))
 
                         # if indiv.masked:
                         #     # p_infection *= mask_reduction
                         #     pass
 
                         if p_infection > np.random.uniform(0, 1):
-                            infection_level = (individuals[j].infected) * np.random.uniform(0, 1)
-                            indiv.infect(infection_level)
+                            infection_level = (individuals[j].opinion) * np.random.uniform(0, 1)
+                            indiv.change_opinion(infection_level)
 
                             if not ever_infected[i]:
                                 ever_infected[i] = True
