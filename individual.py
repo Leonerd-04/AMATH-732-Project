@@ -55,7 +55,7 @@ class Individual:
             self.x += ux * dt
             self.y += uy * dt
         pass
-        self.move_opinionated(0.01, 2, dt)
+        self.move_opinionated(0.01, 0.8, dt)
 
     # If is infected, randomly disinfects.
     # Old and from old infection model.

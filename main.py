@@ -17,7 +17,7 @@ v = 0.005               # Volatility, describes the magnitude of the brownian mo
 
 interaction_distance = 0.05     # How close to be to trigger an exchange of opinion
 interaction_strength = 0.3      # How strong this opinion change is
-echo_effect = 0.1              # When two people are similar opinion strengths, this term pushes their collective opinions up.
+echo_effect = 0.06              # When two people are similar opinion strengths, this term pushes their collective opinions up.
 
 prop_initial_infection = 0.2    # (Deprecated) The proportion of individuals that are infected at t = 0
 infection_probability = 0.3     # (Deprecated) Probability of being infected given that an individual is within infection distance
@@ -89,7 +89,7 @@ def log_individuals(t, writer):
         })
 
 
-def init_individuals():
+def init_individuals_groups():
     for i in range(numparts):
         # Generate a random starting position using polar coordinates
         theta = np.random.uniform(0, 2*np.pi)
@@ -111,6 +111,25 @@ def init_individuals():
 
         individuals.append(Individual(x, y, opinion))
         ever_infected.append(opinion != 0)
+
+
+def init_individuals_uniform():
+    for i in range(numparts):
+        # Generate a random starting position using polar coordinates
+        theta = np.random.uniform(0, 2*np.pi)
+        r = np.random.uniform(R0 - Rdispersion, R0 + Rdispersion)
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+        if np.random.uniform(0, 1) < 0.5:
+            x += R0
+        else:
+            x -= R0
+
+        opinion = np.random.normal(0, 0.6)
+        individuals.append(Individual(x, y, opinion))
+        ever_infected.append(opinion != 0)
+
 
 # As opposed to plots.py, renders an animation of the individuals as the code is running.
 def display(fig, ax, t:float):
@@ -163,7 +182,7 @@ def display(fig, ax, t:float):
 
 
 def main():
-    init_individuals()
+    init_individuals_uniform()
     fig, ax = plt.subplots(figsize=(7, 7))
     sm = plt.cm.ScalarMappable(
         cmap='RdYlBu_r',
