@@ -197,8 +197,8 @@ def main():
     # Open CSV files for data logging
     os.makedirs("results", exist_ok=True)
 
-    with open("results/individual_infections.csv", "w", newline="") as f, \
-         open("results/new_infections.csv", "w", newline="") as nf:
+    with open("results/individual_opinions.csv", "w", newline="") as f, \
+         open("results/new_opinions.csv", "w", newline="") as nf:
 
         fieldnames = [
             "time",

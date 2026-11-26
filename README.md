@@ -41,8 +41,8 @@ python main.py
 
 Simulation data is saved in the `results/` directory, including:
 
-- `individual_infections.csv`: Records individual opinions, positions, and other agent properties over time.
-- `new_infections.csv`: Records newly acquired non-zero opinions during the simulation.
+- `individual_opinions.csv`: Records individual opinions, positions, and other agent properties over time.
+- `new_opinions.csv`: Records newly acquired non-zero opinions during the simulation.
 
 To generate the analysis plots, run:
 
@@ -53,8 +53,6 @@ python plots.py
 The generated plots are saved in the `results/plots/` directory.
 
 ## Understanding the Plots
-
-Below, I explain the different plots. Feel free to ask me if something does not make sense!
 
 ### [I] Spatial Snapshots
 
@@ -68,7 +66,7 @@ The continuous colour scale illustrates the strength of each individual's opinio
 
 The histograms show the distribution of non-zero opinion strengths at five different points in the simulation.
 
-Individuals with zero opinions are excluded from these histograms. The distributions illustrate how the balance between positive and negative opinions changes over time, as well as whether opinions tend to become stronger, weaker, or more concentrated around particular values.
+Individuals with zero opinions are excluded at the start to showcase variability of initial assignments. The distributions illustrate how the balance between positive and negative opinions changes over time, as well as whether opinions tend to become stronger, weaker, or more concentrated around particular values.
 
 ### [III] Phase Portrait
 

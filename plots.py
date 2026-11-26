@@ -136,7 +136,7 @@ def plot_experiment(run_name):
     # --------------------------------------------------------
 
     df = pd.read_csv(
-        os.path.join(RUN_DIR, "individual_infections.csv")
+        os.path.join(RUN_DIR, "individual_opinions.csv")
     )
 
     df["sign"] = np.sign(df["infection"]).astype(int)
@@ -814,7 +814,7 @@ if __name__ == "__main__":
 
     csv_file = os.path.join(
         results_dir,
-        "individual_infections.csv"
+        "individual_opinions.csv"
     )
 
     if not os.path.isfile(csv_file):
