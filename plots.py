@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,9 +5,9 @@ import os
 from scipy.spatial import cKDTree
 from matplotlib.patches import Circle
 
-# The code is adaptable to different contexts including infections. The infection language persists from the previous
-# application, but that's only because there are strong parallels. We shall refrain from micromanaging the naming for
-# now, but of course this would be a priority for formal dispersal of code.
+# Plotting and diagnostics for opinion dynamics on two adjacent rings.
+# Each individual holds an opinion in [-1, 1]. The sign gives the side taken
+# (+1 / -1), the magnitude gives the strength, and 0 means no opinion.
 
 # ============================================================
 # PARAMETERS
@@ -142,8 +141,13 @@ def plot_experiment(run_name):
         os.path.join(RUN_DIR, "individual_opinions.csv")
     )
 
-    df["sign"] = np.sign(df["infection"]).astype(int)
-    df["is_infected"] = df["sign"] != 0
+    # # Older output files store opinion values in a column named "infection".
+    # # Rename it so everything downstream uses the "opinion" column.
+    # if "infection" in df.columns and "opinion" not in df.columns:
+    #     df = df.rename(columns={"infection": "opinion"})
+
+    df["sign"] = np.sign(df["opinion"]).astype(int)
+    df["has_opinion"] = df["sign"] != 0
 
     times = np.sort(df["time"].unique())
 
@@ -177,11 +181,11 @@ def plot_experiment(run_name):
 
     n_t, n_a = sign_mat.shape
 
-    df_opinions = df.pivot(
-    index="time",
-    columns="agent_num",
-    values="infection"
-        ).to_numpy()
+    opinion_mat = df.pivot(
+        index="time",
+        columns="agent_num",
+        values="opinion"
+    ).to_numpy()
 
     # Determine ring from the current x-coordinate.
     # This follows the same left/right selection used in u_2_annuli().
@@ -228,21 +232,22 @@ def plot_experiment(run_name):
 
         d = groups[t]
 
-        und = d[d["sign"] == 0]
-        com = d[d["sign"] != 0]
+        # No opinion vs. holding an opinion
+        neutral = d[d["sign"] == 0]
+        opinionated = d[d["sign"] != 0]
 
         ax.scatter(
-            und["x"],
-            und["y"],
+            neutral["x"],
+            neutral["y"],
             color="black",
             s=3,
             alpha=0.4
         )
 
         ax.scatter(
-            com["x"],
-            com["y"],
-            c=com["infection"],
+            opinionated["x"],
+            opinionated["y"],
+            c=opinionated["opinion"],
             cmap=cmap,
             norm=norm,
             s=15
@@ -332,13 +337,13 @@ def plot_experiment(run_name):
 
     for ax, t in zip(axes.flatten(), times[snap_idx]):
 
-        com = groups[t].loc[
+        opinionated_vals = groups[t].loc[
             groups[t]["sign"] != 0,
-            "infection"
+            "opinion"
         ].to_numpy()
 
         ax.hist(
-            com,
+            opinionated_vals,
             bins=bin_edges,
             color="steelblue",
             edgecolor="black",
@@ -394,8 +399,8 @@ def plot_experiment(run_name):
         label="end"
     )
 
-    ax.set_xlabel("N+")
-    ax.set_ylabel("N-")
+    ax.set_xlabel("N+ (individuals holding a positive opinion)")
+    ax.set_ylabel("N- (individuals holding a negative opinion)")
     ax.set_title("Phase portrait: (N+, N-)")
 
     ax.legend()
@@ -434,6 +439,7 @@ def plot_experiment(run_name):
             y_mat[it]
         ])
 
+        # Individuals who currently hold an opinion
         comm = s != 0
 
         n_pos = int((s == 1).sum())
@@ -501,17 +507,17 @@ def plot_experiment(run_name):
 
     print("4/5: Segregation time series...")
 
-    n_infected = (sign_mat != 0).sum(axis=1)
+    n_opinionated = (sign_mat != 0).sum(axis=1)
     n_positive = (sign_mat == 1).sum(axis=1)
 
     glob_pos_arr = np.full(n_t, np.nan)
 
-    valid = n_infected >= 2
+    valid = n_opinionated >= 2
 
     glob_pos_arr[valid] = (
         (n_positive[valid] - 1)
         /
-        (n_infected[valid] - 1)
+        (n_opinionated[valid] - 1)
     )
 
     cross_pair_fraction = np.full(n_t, np.nan)
@@ -681,10 +687,10 @@ def plot_experiment(run_name):
             (left_mask, ang_l, bnd_l)
         ]:
 
-            # Only consider opinionated individuals
+            # Only consider individuals who hold an opinion
             sel = side_m & (s != 0)
 
-            # Require at least two opinionated individuals
+            # Require at least two such individuals
             if sel.sum() < 2:
                 continue
 
@@ -692,7 +698,7 @@ def plot_experiment(run_name):
             # Boundary count is calculated using majority sign.
             b, bins = angular_boundaries(
                 theta_mat[it][sel],
-                df_opinions[it][sel],
+                opinion_mat[it][sel],
                 n_bins=n_bins_ang,
                 max_empty_bins=MAX_EMPTY_BINS
             )
@@ -779,7 +785,7 @@ def plot_experiment(run_name):
             lw=2
         )
 
-        ax.set_ylabel("# transitions")
+        ax.set_ylabel("# opinion transitions")
         ax.set_xlabel("Time")
 
         ax.set_title(
