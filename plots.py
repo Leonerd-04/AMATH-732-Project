@@ -810,34 +810,20 @@ if __name__ == "__main__":
     results_dir = "results"
 
     if not os.path.isdir(results_dir):
-        raise FileNotFoundError("Could not find the results directory.")
+        raise FileNotFoundError("Could not find results directory.")
 
-    experiments = sorted([
-        folder
-        for folder in os.listdir(results_dir)
-        if os.path.isdir(os.path.join(results_dir, folder))
-        and os.path.isfile(
-            os.path.join(
-                results_dir,
-                folder,
-                "individual_infections.csv"
-            )
+    csv_file = os.path.join(
+        results_dir,
+        "individual_infections.csv"
+    )
+
+    if not os.path.isfile(csv_file):
+        raise FileNotFoundError(
+            f"Could not find {csv_file}"
         )
-    ])
 
-    if not experiments:
-        print("No experiment folders containing simulation data found.")
+    print("Found simulation data.")
 
-    else:
+    plot_experiment("")
 
-        print(f"\nFound {len(experiments)} experiments.")
-
-        for experiment in experiments:
-
-            try:
-                plot_experiment(experiment)
-
-            except Exception as e:
-                print(f"ERROR in {experiment}: {e}")
-
-        print("\nAll experiments processed!")
+    print("\nPlotting complete!")
