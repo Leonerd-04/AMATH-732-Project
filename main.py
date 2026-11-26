@@ -8,58 +8,57 @@ import os
 
 # Important parameters
 numparts = 1000
-numsteps = 1000
+numsteps = 500
 mysig = 0.1
-rotational_speed = 4    # How quick the rotation is around the annulus
-Rdispersion = 0.1       # How far apart the individuals start from each other
+rotational_speed = 4
+Rdispersion = 0.1
 dt = 0.01
-v = 0.005               # Volatility, describes the magnitude of the brownian motion
+v = 0.005
 
-interaction_distance = 0.05     # How close to be to trigger an exchange of opinion
-interaction_strength = 0.3      # How strong this opinion change is
-echo_effect = 0.1              # When two people are similar opinion strengths, this term pushes their collective opinions up.
+interaction_distance = 0.05
+interaction_strength = 0.01
+echo_effect = 0.1
 
-prop_initial_infection = 0.2    # (Deprecated) The proportion of individuals that are infected at t = 0
-infection_probability = 0.3     # (Deprecated) Probability of being infected given that an individual is within infection distance
-mask_reduction = 0.6            # (Deprecated) How much a mask reduces probability of infection
+prop_initial_infection = 0.2
+infection_probability = 0.3
+mask_reduction = 0.6
 
-masking_probability = 0.01      # Deprecated
-mask_multiplier = 10            # Deprecated
+masking_probability = 0.01
+mask_multiplier = 10
 
 infection_halflife = 0.9999
-
-# The probability of being cured at any given time step
-# With it being modeled as an exponential distribution
-# Deprecated
 prob_disinfection = 1 - np.exp2(-dt/infection_halflife)
 
-
 # Function for keeping individuals in annulus
-# Defined in r and theta
 R0 = 1
 theta0 = 0
 strength = 0.1
-def u_annulus(r:float, theta: float)-> tuple[float, float]:
+
+def u_annulus(r: float, theta: float) -> tuple[float, float]:
     ur = -strength * (1 + 99 * np.exp(-((theta - theta0)/0.4) ** 2)) * (r - R0)
-    uth = rotational_speed      # Here the rotation is just lumped into our velocity field
+    uth = rotational_speed
     return ur, uth
 
-# Function for keeping individulas in two orbiting circles.
+
+# Function for keeping individuals in two orbiting circles
 R0 = 0.5
-def u_2_annuli(x:float, y: float)-> tuple[float, float]:
-    r_1 = np.sqrt((x - R0)** 2 + (y) ** 2)
+
+def u_2_annuli(x: float, y: float) -> tuple[float, float]:
+    r_1 = np.sqrt((x - R0) ** 2 + y ** 2)
     theta_1 = np.arctan2(y, x - R0)
-    r_2 = np.sqrt((x + R0)** 2 + (y) ** 2)
+
+    r_2 = np.sqrt((x + R0) ** 2 + y ** 2)
     theta_2 = np.arctan2(y, x + R0)
 
-    ur1 = -strength * (1 + 99 * np.exp(-((theta_1 - np.pi)/0.4) ** 2)) * (r_1 - R0) * np.exp( - r_1 ** 2)
+    ur1 = -strength * (1 + 99 * np.exp(-((theta_1 - np.pi)/0.4) ** 2)) * (r_1 - R0) * np.exp(-r_1 ** 2)
     uth1 = rotational_speed
 
-    ur2 = -strength * (1 + 99 * np.exp(-((theta_2 - 0)/0.4) ** 2)) * (r_2 - R0) * np.exp( - r_2 ** 2)
+    ur2 = -strength * (1 + 99 * np.exp(-((theta_2 - 0)/0.4) ** 2)) * (r_2 - R0) * np.exp(-r_2 ** 2)
     uth2 = -rotational_speed
 
     u1 = ur1 * np.cos(theta_1) - uth1 * np.sin(theta_1)
     v1 = ur1 * np.sin(theta_1) + uth1 * np.cos(theta_1)
+
     u2 = ur2 * np.cos(theta_2) - uth2 * np.sin(theta_2)
     v2 = ur2 * np.sin(theta_2) + uth2 * np.cos(theta_2)
 
@@ -75,9 +74,7 @@ ever_infected = []
 
 # Logging
 def log_individuals(t, writer):
-
     for i, indiv in enumerate(individuals):
-
         writer.writerow({
             "time": t,
             "agent_num": i,
@@ -91,9 +88,10 @@ def log_individuals(t, writer):
 
 def init_individuals():
     for i in range(numparts):
-        # Generate a random starting position using polar coordinates
+
         theta = np.random.uniform(0, 2*np.pi)
         r = np.random.uniform(R0 - Rdispersion, R0 + Rdispersion)
+
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
@@ -112,26 +110,17 @@ def init_individuals():
         individuals.append(Individual(x, y, opinion))
         ever_infected.append(opinion != 0)
 
-# As opposed to plots.py, renders an animation of the individuals as the code is running.
-def display(fig, ax, t:float):
+
+# Display animation
+def display(fig, ax, t: float):
     ax.clear()
 
-    # Grab the x and y coordinates
     x = np.array([p.x for p in individuals])
     y = np.array([p.y for p in individuals])
 
     infected = np.array([p.opinion for p in individuals])
     masked = np.array([p.masked for p in individuals])
 
-    # Uninfected individuals in black
-    # ax.plot(
-    #   x[infected == 0],
-    #    y[infected == 0],
-    #    'k.',
-    #    markersize=3
-    #)
-
-    # Infected individuals using a colour gradient
     ax.scatter(
         x,
         y,
@@ -142,7 +131,6 @@ def display(fig, ax, t:float):
         s=25
     )
 
-    # Masked individuals
     ax.plot(
         x[masked],
         y[masked],
@@ -163,8 +151,15 @@ def display(fig, ax, t:float):
 
 
 def main():
+
+    # Reset individuals for each simulation run
+    individuals.clear()
+    ever_infected.clear()
+
     init_individuals()
+
     fig, ax = plt.subplots(figsize=(7, 7))
+
     sm = plt.cm.ScalarMappable(
         cmap='RdYlBu_r',
         norm=plt.Normalize(vmin=-1, vmax=1)
@@ -173,13 +168,18 @@ def main():
     sm.set_array([])
 
     fig.colorbar(sm, ax=ax, label="Polarization Strength")
+
     t = 0
 
-    # Open CSV files for data logging
-    os.makedirs("results", exist_ok=True)
+    # Create a separate folder for each run
+    run_name = os.environ.get("RUN_NAME", "default")
 
-    with open("results/individual_infections.csv", "w", newline="") as f, \
-         open("results/new_infections.csv", "w", newline="") as nf:
+    output_dir = os.path.join("results", run_name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Open CSV files for data logging
+    with open(os.path.join(output_dir, "individual_infections.csv"), "w", newline="") as f, \
+         open(os.path.join(output_dir, "new_infections.csv"), "w", newline="") as nf:
 
         fieldnames = [
             "time",
@@ -209,54 +209,47 @@ def main():
         # Log initial agent states
         log_individuals(t, writer)
 
-        # This loop handles all of the simulation stepping.
+        # Simulation stepping
         for i in range(numsteps):
+
             display(fig, ax, t)
             t += dt
 
-            # Get coordinates in a suitable format, then find the distance matrix
-            # Such that dist[i, j] is the distance between the ith and jth individual
             x = [[p.x, p.y] for p in individuals]
             dist = sp.distance.squareform(sp.distance.pdist(x))
 
             new_infection_flags = np.zeros(numparts, dtype=bool)
 
             for i, indiv in enumerate(individuals):
+
                 # Movement
                 indiv.move(dt, v, u_2_annuli, is_polar=False)
 
-                # # Check for infection
-                # indiv.tick_infection(prob_disinfection)
-
-                # Check whether to wear a mask
-                # indiv.mask_check(masking_probability, mask_multiplier)
-
-                # # Skips checking for infection if the given individual is infected already
-                # if indiv.infected:
-                #     continue
-
                 # Check whether to become infected
-                # An individual becomes infected when they are within the infection distance of another
                 for j in range(numparts):
+
                     if i == j:
                         continue
 
                     if individuals[j].opinion == 0 or dist[i, j] > interaction_distance:
                         continue
 
-                    p_infection = np.exp(-1 * np.abs(individuals[j].opinion - individuals[i].opinion))
-
-                    # if indiv.masked:
-                    #     # p_infection *= mask_reduction
-                    #     pass
+                    p_infection = np.exp(
+                        -1 * np.abs(individuals[j].opinion - individuals[i].opinion)
+                    )
 
                     if p_infection < np.random.uniform(0, 1):
                         continue
 
-                    infection_level =  ((1 + echo_effect) * individuals[j].opinion - individuals[i].opinion) * np.random.uniform(0, interaction_strength)
+                    infection_level = (
+                        (1 + echo_effect) * individuals[j].opinion
+                        - individuals[i].opinion
+                    ) * np.random.uniform(0, interaction_strength)
+
                     indiv.change_opinion(infection_level)
 
                     if not ever_infected[i]:
+
                         ever_infected[i] = True
                         new_infection_flags[i] = True
 
@@ -271,12 +264,10 @@ def main():
 
                     break
 
-            # Log all agents after the timestep has completed
+            # Log all agents after the timestep
             log_individuals(t, writer)
 
-    # Plot non-interactively
-    plt.ioff()
-    plt.show()
+    plt.close(fig)
 
 
 if __name__ == "__main__":
