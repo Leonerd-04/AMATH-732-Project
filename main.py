@@ -72,7 +72,6 @@ def u_2_annuli(x:float, y: float)-> tuple[float, float]:
 individuals = []
 ever_infected = []
 
-
 # Logging
 def log_individuals(t, writer):
 
@@ -81,9 +80,9 @@ def log_individuals(t, writer):
         writer.writerow({
             "time": t,
             "agent_num": i,
-            "infection": indiv.opinion,
+            "opinion": indiv.opinion,
             "masked": indiv.masked,
-            "ever_infected": ever_infected[i],
+            "ever_opinionated": ever_infected[i],
             "x": indiv.x,
             "y": indiv.y
         })
@@ -203,9 +202,9 @@ def main():
         fieldnames = [
             "time",
             "agent_num",
-            "infection",
+            "opinion",
             "masked",
-            "ever_infected",
+            "ever_opinionated",
             "x",
             "y"
         ]
@@ -216,7 +215,7 @@ def main():
         new_fieldnames = [
             "time",
             "agent_num",
-            "infection_strength",
+            "opinion_strength",
             "masked",
             "x",
             "y"
@@ -282,7 +281,7 @@ def main():
                         new_writer.writerow({
                             "time": t,
                             "agent_num": i,
-                            "infection_strength": infection_level,
+                            "opinion_strength": infection_level,
                             "masked": indiv.masked,
                             "x": indiv.x,
                             "y": indiv.y
