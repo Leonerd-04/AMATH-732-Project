@@ -6,6 +6,9 @@ import os
 from scipy.spatial import cKDTree
 from matplotlib.patches import Circle
 
+# The code is adaptable to different context including infections. The infection language persists from the previous
+# application, but that's only because there are strong parallels. We shall refrain from micromanaging the naming for
+# now, but of course this would be a priority for formal dispersal of code.
 
 # ============================================================
 # PARAMETERS
