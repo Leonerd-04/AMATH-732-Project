@@ -8,30 +8,16 @@ import os
 
 # Important parameters
 numparts = 1000
-numsteps = 1000
+numsteps = 400
 mysig = 0.1
 rotational_speed = 4    # How quick the rotation is around the annulus
 Rdispersion = 0.1       # How far apart the individuals start from each other
 dt = 0.01
 v = 0.005               # Volatility, describes the magnitude of the brownian motion
 
-interaction_distance = 0.05     # How close to be to trigger an exchange of opinion
+interaction_distance = 0.3      # How close to be to trigger an exchange of opinion
 interaction_strength = 0.3      # How strong this opinion change is
-echo_effect = 0.06              # When two people are similar opinion strengths, this term pushes their collective opinions up.
-
-prop_initial_infection = 0.2    # (Deprecated) The proportion of individuals that are infected at t = 0
-infection_probability = 0.3     # (Deprecated) Probability of being infected given that an individual is within infection distance
-mask_reduction = 0.6            # (Deprecated) How much a mask reduces probability of infection
-
-masking_probability = 0.01      # Deprecated
-mask_multiplier = 10            # Deprecated
-
-infection_halflife = 0.9999
-
-# The probability of being cured at any given time step
-# With it being modeled as an exponential distribution
-# Deprecated
-prob_disinfection = 1 - np.exp2(-dt/infection_halflife)
+echo_effect = 0.3               # When two people are similar opinion strengths, this term pushes their collective opinions up.
 
 
 # Function for keeping individuals in annulus

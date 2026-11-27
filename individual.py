@@ -7,9 +7,7 @@ class Individual:
         self.x = x
         self.y = y
         self.opinion = float(infected)
-        self.masked = False
-        self.masked_x = None
-        self.masked_y = None
+        self.masked = False     # Deprecated, but hard to remove
 
     # Calculate one step of brownian motion.
     # v is the volatility and represents how far the individuals move in a given timestep
@@ -57,38 +55,7 @@ class Individual:
         pass
         self.move_opinionated(0.01, 0.8, dt)
 
-    # If is infected, randomly disinfects.
-    # Old and from old infection model.
-    def tick_infection(self, prob_disinfection: float):
-        if self.opinion == 0:
-            return
-        if np.random.uniform(0, 1) < prob_disinfection:
-            self.opinion = 0.0
-
-
-    # Check whether to put on/take off a mask
-    # Old and from old infection model.
-    def mask_check(self, masking_probability: float, mask_multiplier: float):
-        if self.masked_x is None:
-            return
-
-        dist_sick_sq = (self.x - self.masked_x) ** 2 + (self.y - self.masked_y) ** 2
-        is_in_sick_range = dist_sick_sq < 0.1
-
-        current_masking_probability = masking_probability
-
-        if is_in_sick_range:
-            current_masking_probability = masking_probability * mask_multiplier
-
-        if np.random.uniform(0, 1) < current_masking_probability:
-            self.masked = True
-        else:
-            self.masked = False
-
-
     # Notifies an individual they've been infected
     def change_opinion(self, delta_op: float = 1.0):
         self.opinion += delta_op
         self.opinion = np.clip(self.opinion, -1, 1)
-        self.masked_x = self.x
-        self.masked_y = self.y
